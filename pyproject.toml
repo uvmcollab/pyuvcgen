@@ -1,0 +1,24 @@
+[project]
+name = "pyuvcgen"
+version = "1.0.2"
+authors = [
+    {name = "Ciro Bermudez"}
+]
+description = "Python based UVM-UVC generator"
+requires-python = ">= 3.9"
+dependencies = [
+    "Jinja2 >= 3.1.6",
+    "PyYAML >= 6.0.2"
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+pyuvcgen = "pyuvcgen.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/cirofabianbermudez/pyuvcgen"

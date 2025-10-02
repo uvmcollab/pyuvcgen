@@ -1,0 +1,267 @@
+##=============================================================================
+## [Filename]       Makefile.vcs
+## [Project]        {{ name }}
+## [Author]         {{ author }} - {{ email }}
+## [Language]       GNU Makefile
+## [Created]        Nov 2024
+## [Modified]       -
+## [Description]    Makefile for testing {{ name }}
+## [Notes]          -
+## [Status]         stable
+## [Revisions]      -
+##=============================================================================
+
+# ===============================  VARIABLES  =================================
+
+# Miscellaneous variables
+CUR_DATE   := $(shell date +%Y-%m-%d_%H-%M-%S)
+
+# Directories
+GIT_DIR     := $(shell git rev-parse --show-toplevel)
+UVM_DIR     := $(GIT_DIR)
+ROOT_DIR    := $(CURDIR)
+RUN_DIR     := $(ROOT_DIR)/sim
+LOGS_DIR    := $(ROOT_DIR)/logs
+COV_DIR     := $(ROOT_DIR)/coverage
+SCRIPTS_DIR := $(UVM_DIR)/scripts
+VERDI_DIR   := $(SCRIPTS_DIR)/verdi
+RTL_DIR     := $(UVM_DIR)/rtl
+DPI_DIR     := $(UVM_DIR)/dpi
+
+# UVM configurations
+TEST ?= top_test
+VERBOSITY ?= UVM_MEDIUM
+SEED ?= 1
+VCS_DEFINES ?= +define+GIT_DIR=\"$(UVM_DIR)\"
+SIMV_ARGS ?=
+
+# Simulation mode
+GUI_MODE  ?= false
+RUN_FLAGS ?=
+
+# Code Coverage
+CODE_COV  ?= false
+COV_FLAGS ?=
+
+# ================================  CONTROL  ==================================
+
+# Simulation mode switch
+ifeq ($(GUI_MODE),true)
+	RUN_FLAGS += -gui=verdi &
+endif
+
+# Code Coverage switch
+ifeq ($(CODE_COV),true)
+	COV_FLAGS += -cm line+tgl
+endif
+
+# ==============================  TOOLS SETUP  ================================
+
+# Files
+RTL_FILES = $(RTL_DIR)/buffer.sv
+SVE = -F $(UVM_DIR)/sve.f
+VERDI_FILE = $(VERDI_DIR)/verdi.tcl
+DPI_FILE = $(DPI_DIR)/external.o
+
+# UVCs
+UVCS = -F $(GIT_DIR)/{{ name }}.f
+
+# Synopsys VCS/SIMV options
+FILES = $(UVCS) $(RTL_FILES) $(SVE) 
+
+VCS_FLAGS = -full64 -sverilog -ntb_opts uvm-1.2 \
+			-lca -debug_access+all -kdb \
+			-timescale=1ps/100fs $(FILES) \
+			-l $(LOGS_DIR)/$(CUR_DATE)_comp.log \
+			-top tb \
+			-j8 \
+			$(VCS_DEFINES) \
+			$(COV_FLAGS)
+
+SIMV_FLAGS = +UVM_TESTNAME=$(TEST) +UVM_VERBOSITY=$(VERBOSITY) \
+			-l $(LOGS_DIR)/$(CUR_DATE)_simv.log \
+			+UVM_TR_RECORD +UVM_LOG_RECORD +UVM_NO_RELNOTES \
+			+UVM_VERDI_TRACE=HIER+RAL+TLM \
+			$(SIMV_ARGS) \
+			$(COV_FLAGS) \
+			-ucli -do $(UVM_DIR)/run.tcl \
+			$(RUN_FLAGS)
+
+URG_FLAGS = -dir simv.vdb -format both \
+			-log $(LOGS_DIR)/$(CUR_DATE)_cov.log \
+			-report $(COV_DIR)
+
+# VERDI Configuration (see work/sim/verdi.cmd)
+VERDI_FLAGS = -ssf novas.fsdb -dbdir simv.daidir -nologo -q
+VERDI_PLAY  = -play $(VERDI_FILE)
+VERDI_COV   = -cov -covdir simv.vdb -nologo -q
+
+# Colors
+C_RED := \033[31m
+C_GRE := \033[32m
+C_BLU := \033[34m
+C_YEL := \033[33m
+C_ORA := \033[38;5;214m
+NC    := \033[0m 
+
+# Synopsys tools
+SYNOPSYS_TOOLS = vcs verdi wv
+
+# ================================  TARGETS  ==================================
+.DEFAULT_GOAL := all
+SHELL         := bash
+
+.PHONY: all
+all: help
+#______________________________________________________________________________
+
+.PHONY: tools-check
+tools-check: ## Check for missing tools
+	@echo -e "$(C_ORA)Synopsys tool checking...$(NC)"
+	@for tool in $(SYNOPSYS_TOOLS); do \
+		if ! command -v $$tool >/dev/null 2>&1; then \
+			echo -e "$(C_RED)Error: $(C_BLU)$$tool$(C_RED) is not installed or not in PATH$(NC)"; \
+			exit 1; \
+		else \
+			echo -e "$(C_BLU)$$tool$(NC)\t is INSTALLED$(NC)"; \
+		fi; \
+	done
+	@echo "All Synopsys tools are available"
+#______________________________________________________________________________
+
+.PHONY: version
+vcs-version: ## Display Synopsys VCS version
+	vcs -ID
+#______________________________________________________________________________
+
+.PHONY: vars
+vars: ## Print Makefile variables
+	@echo ""
+	@echo -e "$(C_ORA)Miscellaneous variables...$(NC)"
+	@echo "CUR_DATE    = $(CUR_DATE)"
+	@echo ""
+	@echo -e "$(C_ORA)Directory variables...$(NC)"
+	@echo "GIT_DIR     = $(GIT_DIR)"
+	@echo "UVM_DIR     = $(UVM_DIR)"
+	@echo "ROOT_DIR    = $(ROOT_DIR)"
+	@echo "RUN_DIR     = $(RUN_DIR)"
+	@echo "LOGS_DIR    = $(LOGS_DIR)"
+	@echo "COV_DIR     = $(COV_DIR)"
+	@echo "SCRIPTS_DIR = $(SCRIPTS_DIR)"
+	@echo "VERDI_DIR   = $(VERDI_DIR)"
+	@echo "RTL_DIR     = $(RTL_DIR)"
+	@echo "DPI_DIR     = $(DPI_DIR)"
+	@echo ""
+	@echo -e "$(C_ORA)UVM variables...$(NC)"
+	@echo "TEST        = $(TEST)"
+	@echo "VERBOSITY   = $(VERBOSITY)"
+	@echo "SEED        = $(SEED)"
+	@echo "VCS_DEFINES = $(VCS_DEFINES)"
+	@echo "SIMV_ARGS   = $(SIMV_ARGS)"
+	@echo "GUI_MODE    = $(GUI_MODE)"
+	@echo "RUN_FLAGS   = $(RUN_FLAGS)"
+	@echo "CODE_COV    = $(CODE_COV)"
+	@echo "COV_FLAGS   = $(COV_FLAGS)"
+	@echo ""
+#______________________________________________________________________________
+
+.PHONY: compile
+compile: ## Runs VCS compilation
+	@echo -e "$(C_ORA)Compiling UVM project$(NC)"
+	@mkdir -p $(RUN_DIR) $(LOGS_DIR)
+	cd $(RUN_DIR) && vcs $(VCS_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: sim
+sim: ## Runs simv simulation using SEED
+	@echo -e "$(C_ORA)Running simulation SEED=$(SEED)$(NC)"
+	cd $(RUN_DIR) && ./simv +ntb_random_seed=${SEED} $(SIMV_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: random
+random: ## Runs simv simulation using a random seed
+	@echo -e "$(C_ORA)Running simulation with random seed$(NC)"
+	cd $(RUN_DIR) && ./simv +ntb_random_seed_automatic $(SIMV_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: verdi
+verdi: ## Opens Verdi GUI
+	@echo -e "$(C_ORA)Openning Verdi$(NC)"
+	cd $(RUN_DIR) && verdi $(VERDI_FLAGS) &
+#______________________________________________________________________________
+
+.PHONY: verdi-play
+verdi-play: ## Opens Verdi GUI running verdi.tcl file
+	@echo -e "$(C_ORA)Openning Verdi running verdi.cmd$(NC)"
+	cd $(RUN_DIR) && verdi $(VERDI_FLAGS) $(VERDI_PLAY) &
+#______________________________________________________________________________
+
+.PHONY: verdi-cov
+verdi-cov: ## Open coverage report in Verdi
+	@echo -e "$(C_ORA)Creating coverage report$(NC)"
+	cd $(RUN_DIR) && verdi $(VERDI_COV) &
+#______________________________________________________________________________
+
+.PHONY: coverage
+coverage: ## Create coverage report
+	@echo -e "$(C_ORA)Creating coverage report$(NC)"
+	@mkdir -p $(COV_DIR)
+	cd $(RUN_DIR) && urg $(URG_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: compile-dpi
+compile-dpi: ## Run dpi (C/C++) compilation
+	@echo -e "$(C_ORA)Compiling dpi (C/C++) code$(NC)"
+	g++ -c $(DPI_DIR)/external.cpp -o $(DPI_DIR)/external.o
+#______________________________________________________________________________
+
+.PHONY: clean
+clean: ## Remove all simulation files
+	@echo -e "$(C_ORA)Removing all simulation files$(NC)"
+	rm -rf $(RUN_DIR) $(DPI_DIR)/*.o
+#______________________________________________________________________________
+
+.PHONY: clean
+clean-logs: ## Remove logs
+	@echo -e "$(C_ORA)Removing all logs files$(NC)"
+	rm -rf $(LOGS_DIR)/*
+#______________________________________________________________________________
+
+.PHONY: filter
+filter: ## Filter logs
+	@echo -e "$(C_ORA)Filtering logs$(NC)"
+	@mkdir -p $(LOGS_DIR)/filter
+	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "DRIVER"          *_simv.log > $(LOGS_DIR)/filter/read.log         || true
+	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "MONITOR"           *_simv.log > $(LOGS_DIR)/filter/monitor.log      || true
+#______________________________________________________________________________
+
+.PHONY: help
+help: ## Displays help message
+	@echo ""
+	@echo "======================================================================"
+	@echo ""
+	@echo "Usage: make <target> <variables>"
+	@echo ""
+	@echo "--------------------------- Targets ----------------------------------"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "--------------------------- Variables -------------------------------"
+	@echo "  TEST              : Name of UVM_TEST"
+	@echo "  VERBOSITY         : UVM_VERBOSITY of the simulation"
+	@echo "  SEED              : Random seed used, must be an integer > 0"
+	@echo "  VCS_DEFINES       : Add defines to vcs command"
+	@echo "  SIMV_ARG          : Add plusargs to simv command"
+	@echo "  GUI_MODE          : Enables to run the sim in gui mode [true|false]"
+	@echo "  CODE_COV          : Enables code coverage [true|false]"
+	@echo ""
+	@echo "-------------------------- Variable Values --------------------------"
+	@echo "  TEST              : $(TEST)"
+	@echo "  VERBOSITY         : $(VERBOSITY)"
+	@echo "  SEED              : $(SEED)"
+	@echo "  VCS_DEFINES       : $(VCS_DEFINES)"
+	@echo "  SIMV_ARGS         : $(SIMV_ARGS)"
+	@echo "  GUI_MODE          : $(GUI_MODE)"
+	@echo "  CODE_COV          : $(CODE_COV)"
+	@echo ""
+	@echo "======================================================================"
+	@echo ""

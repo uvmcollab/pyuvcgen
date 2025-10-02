@@ -1,0 +1,2 @@
+recursive-include src/pyuvcgen/templates *
+recursive-include src/pyuvcgen/yaml *

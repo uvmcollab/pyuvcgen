@@ -1,0 +1,20 @@
+name: spi_uvc
+author: Ciro Bermudez
+email: cirofabian.bermudezmarquez@ba.infn.it
+domain: baltig.infn.it
+namespace: vip
+date: 2025/04/02
+vsqr_seq_name: spi
+sequence_item:
+  - item1:
+    type: rand byte
+    name: m_data
+    format: d
+  - item3:
+    type: byte
+    name: m_data_mosi
+    format: d
+  - item4:
+    type: byte
+    name: m_data_miso
+    format: d

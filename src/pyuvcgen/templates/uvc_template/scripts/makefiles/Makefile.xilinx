@@ -1,0 +1,220 @@
+##=============================================================================
+## [Filename]       Makefile.xilinx
+## [Project]        {{ name }}
+## [Author]         {{ author }} - {{ email }}
+## [Language]       GNU Makefile
+## [Created]        {{ date }}
+## [Modified]       -
+## [Description]    Makefile for testing {{ name }}
+## [Notes]          -
+## [Status]         stable
+## [Revisions]      -
+##=============================================================================
+
+# ===============================  VARIABLES  =================================
+
+# Miscellaneous variables
+CUR_DATE   := $(shell date +%Y-%m-%d_%H-%M-%S)
+
+# Directories
+GIT_DIR     := $(shell git rev-parse --show-toplevel)
+UVM_DIR     := $(GIT_DIR)
+ROOT_DIR    := $(CURDIR)
+RUN_DIR     := $(ROOT_DIR)/sim
+LOGS_DIR    := $(ROOT_DIR)/logs
+COV_DIR     := $(ROOT_DIR)/coverage
+SCRIPTS_DIR := $(UVM_DIR)/scripts
+WDB_DIR     := $(ROOT_DIR)/wdb
+TCL_DIR     := $(SCRIPTS_DIR)/vivado
+RTL_DIR     := $(GIT_DIR)/rtl
+
+# UVM configurations
+TEST ?= top_test
+VERBOSITY ?= UVM_MEDIUM
+SEED ?= 1
+XVLOG_DEFINES ?= -d GIT_DIR=\"$(UVM_DIR)\"
+XSIM_ARGS ?=
+
+# ================================  CONTROL  ==================================
+
+# Simulation mode switch
+ifeq ($(GUI_MODE),true)
+	RUN_FLAGS = -gui &
+endif
+
+# ==============================  TOOLS SETUP  ================================
+
+# Files
+RTL_FILES = $(RTL_DIR)/buffer.sv
+SVE = -f $(UVM_DIR)/sve.f
+
+# UVCs
+UVCS = -f $(UVM_DIR)/{{ name }}.f
+
+# Vivado XVLOG/XELAB/XSIM options
+FILES = $(UVCS) $(RTL_FILES) $(SVE)
+
+XVLOG_FLAGS = -sv $(XVLOG_DEFINES) $(FILES) \
+			  -work work \
+			  -L uvm \
+			  -log $(LOGS_DIR)/compile.log
+
+XELAB_FLAGS = tb -debug all \
+              -s work.tb \
+			  -mt 10 \
+			  -timescale 1ns/100ps \
+			  -override_timeunit -override_timeprecision \
+			  -L work -L xil_defaultlib -L uvm \
+			  -L xpm -L unisims_ver -L unimacro_ver -L secureip \
+			  -log $(LOGS_DIR)/elaborate.log
+
+XSIM_FLAGS = work.tb -wdb $(WDB_DIR)/tb.wdb \
+			-tclbatch $(TCL_DIR)/run.tcl \
+			-testplusarg UVM_TESTNAME=$(TEST) \
+			-testplusarg UVM_VERBOSITY=$(VERBOSITY) \
+			-stats -onerror stop \
+			-log $(LOGS_DIR)/simulate.log \
+			-sv_seed $(SEED) \
+			$(RUN_FLAGS)
+
+WAVE_FLAGS = work.tb -view $(WDB_DIR)/tb.wdb -gui
+
+# Colors
+C_RED := \033[31m
+C_GRE := \033[32m
+C_BLU := \033[34m
+C_YEL := \033[33m
+C_ORA := \033[38;5;214m
+NC    := \033[0m 
+
+# Xilinx tools
+TOOLS = vivado xvlog xelab xsim
+
+# ================================  TARGETS  ==================================
+
+SHELL         := bash
+.DEFAULT_GOAL := all
+
+.PHONY: all
+all: help
+#______________________________________________________________________________
+
+.PHONY: tools-check
+tools-check: ## Check for missing tools
+	@echo -e "$(C_ORA)Xilinx tool checking...$(NC)"
+	@for tool in $(TOOLS); do \
+		if ! command -v $$tool >/dev/null 2>&1; then \
+			echo -e "$(C_RED)Error: $(C_BLU)$$tool$(C_RED) is not installed or not in PATH$(NC)"; \
+			exit 1; \
+		else \
+			echo -e "$(C_BLU)$$tool$(NC)\t is INSTALLED$(NC)"; \
+		fi; \
+	done
+	@echo "All tools are available"
+#______________________________________________________________________________
+
+.PHONY: vars
+vars: ## Print Makefile variables
+	@echo ""
+	@echo -e "$(C_ORA)Miscellaneous variables...$(NC)"
+	@echo "CUR_DATE    = $(CUR_DATE)"
+	@echo ""
+	@echo -e "$(C_ORA)Directory variables...$(NC)"
+	@echo "GIT_DIR     = $(GIT_DIR)"
+	@echo "UVM_DIR     = $(UVM_DIR)"
+	@echo "ROOT_DIR    = $(ROOT_DIR)"
+	@echo "RUN_DIR     = $(RUN_DIR)"
+	@echo "LOGS_DIR    = $(LOGS_DIR)"
+	@echo "COV_DIR     = $(COV_DIR)"
+	@echo "SCRIPTS_DIR = $(SCRIPTS_DIR)"
+	@echo "WDB_DIR     = $(WDB_DIR)"
+	@echo "TCL_DIR     = $(TCL_DIR)"
+	@echo "RTL_DIR     = $(RTL_DIR)"
+	@echo ""
+	@echo -e "$(C_ORA)UVM variables...$(NC)"
+	@echo "TEST        = $(TEST)"
+	@echo "VERBOSITY   = $(VERBOSITY)"
+	@echo "SEED        = $(SEED)"
+	@echo "VCS_DEFINES = $(VCS_DEFINES)"
+	@echo "XSIM_ARGS   = $(XSIM_ARGS)"
+	@echo "GUI_MODE    = $(GUI_MODE)"
+	@echo "RUN_FLAGS   = $(RUN_FLAGS)"
+	@echo ""
+#______________________________________________________________________________
+
+.PHONY: compile
+compile: ## Runs XVLOG compilation
+	@echo -e "$(C_ORA)Compiling UVM project$(NC)"
+	@mkdir -p $(RUN_DIR) $(LOGS_DIR)
+	cd $(RUN_DIR) && xvlog $(XVLOG_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: elaborate
+elaborate: ## Runs XELAB elaboration
+	@echo -e "$(C_ORA)Elaborating UVM project$(NC)"
+	cd $(RUN_DIR) && xelab $(XELAB_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: sim
+sim: ## Runs XSIM simulation using SEED
+	@echo -e "$(C_ORA)Running simulation SEED=$(SEED)$(NC)"
+	@mkdir -p $(WDB_DIR)
+	cd $(RUN_DIR) && xsim $(XSIM_FLAGS) 
+#______________________________________________________________________________
+
+.PHONY: wave
+wave: ## Open vivado waveform
+	@echo -e "$(C_ORA)Openning waveform$(NC)"
+	cd $(RUN_DIR) && xsim $(WAVE_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: clean
+clean: ## Remove all simulation files
+	@echo -e "$(C_ORA)Removing all simulation files$(NC)"
+	rm -rf $(RUN_DIR)
+#______________________________________________________________________________
+
+.PHONY: clean
+clean-logs: ## Remove logs
+	@echo -e "$(C_ORA)Removing all logs files$(NC)"
+	rm -rf $(LOGS_DIR)/*
+#______________________________________________________________________________
+
+.PHONY: filter
+filter: ## Filter logs
+	@echo -e "$(C_ORA)Filtering logs$(NC)"
+	@mkdir -p $(LOGS_DIR)/filter
+	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "DRIVER"  *_simv.log > $(LOGS_DIR)/filter/read.log    || true
+	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "MONITOR" *_simv.log > $(LOGS_DIR)/filter/monitor.log || true
+#______________________________________________________________________________
+
+.PHONY: help
+help: ## Display help message
+	@echo ""
+	@echo "======================================================================"
+	@echo ""
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "--------------------------- Targets ----------------------------------"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "--------------------------- Variables -------------------------------"
+	@echo "  TEST              : Name of UVM_TEST"
+	@echo "  VERBOSITY         : UVM_VERBOSITY of the simulation"
+	@echo "  SEED              : Random seed used, must be an integer > 0"
+	@echo "  VCS_DEFINES       : Add defines to vcs command"
+	@echo "  SIMV_ARG          : Add plusargs to simv command"
+	@echo "  GUI_MODE          : Enables to run the sim in gui mode [true|false]"
+	@echo "  CODE_COV          : Enables code coverage [true|false]"
+	@echo ""
+	@echo "-------------------------- Variable Values --------------------------"
+	@echo "  TEST              : $(TEST)"
+	@echo "  VERBOSITY         : $(VERBOSITY)"
+	@echo "  SEED              : $(SEED)"
+	@echo "  VCS_DEFINES       : $(VCS_DEFINES)"
+	@echo "  SIMV_ARGS         : $(SIMV_ARGS)"
+	@echo "  GUI_MODE          : $(GUI_MODE)"
+	@echo "  CODE_COV          : $(CODE_COV)"
+	@echo ""
+	@echo "======================================================================"
+	@echo ""

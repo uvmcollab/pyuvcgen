@@ -1,0 +1,89 @@
+##=============================================================================
+## [Filename]       Makefile
+## [Project]        pyuvcgen
+## [Author]         Ciro Bermudez
+## [Language]       GNU Makefile
+## [Created]        Jun 2025
+## [Modified]       -
+## [Description]    Makefile to create generate a sv code template for UVCs
+## [Notes]          
+## [Status]         stable
+## [Revisions]      -
+##=============================================================================
+
+# ===============================  VARIABLES  =================================
+
+# Miscellaneous variables
+CUR_DATE   := $(shell date +%Y-%m-%d_%H-%M-%S)
+
+# Directories
+GIT_DIR     := $(shell git rev-parse --show-toplevel)
+ROOT_DIR    := $(CURDIR)
+SCRIPTS_DIR := $(GIT_DIR)/scripts
+OUT_DIR     :=
+
+# Files
+YAML_FILE   :=
+
+# Colors
+C_RED := \033[31m
+C_GRE := \033[32m
+C_BLU := \033[34m
+C_YEL := \033[33m
+C_ORA := \033[38;5;214m
+NC    := \033[0m 
+
+# ================================  TARGETS  ==================================
+
+SHELL         := bash
+.DEFAULT_GOAL := all
+
+.PHONY: all
+all: help
+#______________________________________________________________________________
+
+.PHONY: setup
+setup: ## Create Python environment
+	@echo -e "$(C_ORA)Creating Python environment$(NC)"
+	$(SCRIPTS_DIR)/setup/setup_python_env.sh
+#______________________________________________________________________________
+
+.PHONY: gen
+gen: ## Generate UVC
+	@echo -e "$(C_ORA)Generating UVC$(NC)"
+	@python3 -m pyuvcgen
+#______________________________________________________________________________
+
+.PHONY: uvc
+uvc: ## Generate UVC
+	@echo -e "$(C_ORA)Generating UVC$(NC)"
+	@python3 -m pyuvcgen -o $(OUT_DIR) -c $(YAML_FILE)
+#______________________________________________________________________________
+
+.PHONY: clean
+clean:  ## Delete generated files
+	@echo -e "$(C_ORA)Removing all generated files$(NC)"
+	rm -rf generated_uvc/
+#______________________________________________________________________________
+
+.PHONY: clean-venv
+clean-venv:  ## Delele python virtual environment
+	@echo -e "$(C_ORA)Removing all generated files$(NC)"
+	rm -rf .venv
+#______________________________________________________________________________
+
+.PHONY: help
+help: ## Display help message
+	@echo ""
+	@echo -e "$(C_ORA)Help message$(NC)"
+	@echo "======================================================================"
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo ""
+	@echo "Available targets:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo ""
+	@echo "======================================================================"
+	@echo ""

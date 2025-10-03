@@ -195,3 +195,7 @@ cython_debug/
 # Personal directories and files
 generated_uvc/
 Makefile
+
+# Exception: Allow UVC template env directory
+!src/pyuvcgen/templates/uvc_template/env/
+!src/pyuvcgen/templates/uvc_template_snps/env/

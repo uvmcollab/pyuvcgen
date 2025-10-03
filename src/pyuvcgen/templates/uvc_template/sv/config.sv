@@ -2,7 +2,8 @@
 `define {{ name | upper }}_CONFIG_SV
 
 class {{ name }}_config extends uvm_object;
-
+  
+  virtual {{ name }}_if vif;
   `uvm_object_utils({{ name }}_config)
 
   uvm_active_passive_enum  is_active = UVM_ACTIVE;

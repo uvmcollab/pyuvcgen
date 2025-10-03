@@ -32,6 +32,11 @@ function void top_env::build_phase(uvm_phase phase);
 
   m_{{ name }}_config = {{ name }}_config::type_id::create("m_{{ name }}_config");
   m_{{ name }}_config.is_active = UVM_ACTIVE;
+
+  if (!uvm_config_db#(virtual {{ name }}_if)::get(this, "uvm_test_top.m_env.m_{{ name }}_agent", "vif", m_{{ name }}_config.vif)) begin
+    `uvm_fatal(get_name(), "Could not retrieve top_env_config from config db")
+  end
+
   uvm_config_db #({{ name }}_config)::set(this, "m_{{ name }}_agent*", "config", m_{{ name }}_config);
   m_{{ name }}_agent = {{ name }}_agent::type_id::create("m_{{ name }}_agent", this);
 

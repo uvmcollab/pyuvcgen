@@ -43,8 +43,16 @@ endfunction : build_phase
 function void {{ name }}_agent::connect_phase(uvm_phase phase);
   if (m_config.is_active == UVM_ACTIVE) begin
     m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+    m_driver.vif = m_config.vif;
+    m_driver.m_config = m_config;
   end
 
+  if (m_config.vif == null) begin
+  `uvm_fatal(get_name(), "Could not retrieve {{ name }}_uvc virtual interface ")
+  end
+
+  m_monitor.vif = m_config.vif;
+  m_driver.m_config = m_config;
   m_monitor.analysis_port.connect(this.analysis_port);
 endfunction : connect_phase
 

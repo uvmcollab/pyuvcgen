@@ -26,7 +26,7 @@ endfunction : new
 function void top_test::build_phase(uvm_phase phase);
   m_env_config = top_env_config::type_id::create("m_env_config");
   m_env_config.coverage_enable = 0;
-  uvm_config_db#(top_env_config)::set(this, "m_env*", "config", m_env_config);
+  uvm_config_db#(top_env_config)::set(this, "m_env", "config", m_env_config);
 
   m_env = top_env::type_id::create("m_env", this);
 endfunction : build_phase

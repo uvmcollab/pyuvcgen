@@ -2,9 +2,10 @@
 `define {{ name | upper }}_CONFIG_SV
 
 class {{ name }}_config extends uvm_object;
-
+  
   `uvm_object_utils({{ name }}_config)
 
+  virtual {{ name }}_if    vif;
   uvm_active_passive_enum  is_active = UVM_ACTIVE;
 
   extern function new(string name = "");

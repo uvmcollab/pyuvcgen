@@ -1,5 +1,5 @@
 ##=============================================================================
-## [Filename]       Makefile.xilinx
+## [Filename]       Makefile.vivado
 ## [Project]        {{ name }}
 ## [Author]         {{ author }} - {{ email }}
 ## [Language]       GNU Makefile
@@ -33,13 +33,38 @@ TEST ?= top_test
 VERBOSITY ?= UVM_MEDIUM
 SEED ?= 1
 XVLOG_DEFINES ?= -d GIT_DIR=\"$(UVM_DIR)\"
-XSIM_ARGS ?=
+RUN_ARGS ?=
+
+# Simulation mode
+ENABLE_GUI ?= false
+GUI_FLAGS ?= -onfinish quit
+
+# Random Seed mode
+SEED_MODE  ?= auto
+SEED_FLAGS ?=
+
+# Code Coverage
+COV_NAME ?= coverage_$(CUR_DATE)
+ENABLE_CODE_COV ?= false
+COV_FLAGS   ?=
 
 # ================================  CONTROL  ==================================
 
 # Simulation mode switch
-ifeq ($(GUI_MODE),true)
-	RUN_FLAGS = -gui &
+ifeq ($(ENABLE_GUI),true)
+  GUI_FLAGS = -gui &
+endif
+
+# Code Coverage switch
+ifeq ($(ENABLE_CODE_COV),true)
+  COV_FLAGS = 
+endif
+
+# Command to run simv with correct seed option [auto|fixed]
+ifeq ($(SEED_MODE),auto)
+  SEED_FLAGS = 2
+else
+  SEED_FLAGS = 1
 endif
 
 # ==============================  TOOLS SETUP  ================================
@@ -51,13 +76,13 @@ SVE = -f $(UVM_DIR)/sve.f
 # UVCs
 UVCS = -f $(UVM_DIR)/{{ name }}.f
 
-# Vivado XVLOG/XELAB/XSIM options
+# Vivado XVLOG/XELAB/XSIM/XCRG options
 FILES = $(UVCS) $(RTL_FILES) $(SVE)
 
 XVLOG_FLAGS = -sv $(XVLOG_DEFINES) $(FILES) \
 			  -work work \
 			  -L uvm \
-			  -log $(LOGS_DIR)/compile.log
+			  -log $(LOGS_DIR)/$(CUR_DATE)_compile.log
 
 XELAB_FLAGS = tb -debug all \
               -s work.tb \
@@ -66,16 +91,19 @@ XELAB_FLAGS = tb -debug all \
 			  -override_timeunit -override_timeprecision \
 			  -L work -L xil_defaultlib -L uvm \
 			  -L xpm -L unisims_ver -L unimacro_ver -L secureip \
-			  -log $(LOGS_DIR)/elaborate.log
+			  -log $(LOGS_DIR)/$(CUR_DATE)_elaborate.log
 
 XSIM_FLAGS = work.tb -wdb $(WDB_DIR)/tb.wdb \
 			-tclbatch $(TCL_DIR)/run.tcl \
 			-testplusarg UVM_TESTNAME=$(TEST) \
 			-testplusarg UVM_VERBOSITY=$(VERBOSITY) \
 			-stats -onerror stop \
-			-log $(LOGS_DIR)/simulate.log \
+			-log $(LOGS_DIR)/$(CUR_DATE)_simulate.log \
 			-sv_seed $(SEED) \
+			$(GUI_FLAGS) \
 			$(RUN_FLAGS)
+
+XCRG_FLAGS = -cov_db_dir $(RUN_DIR) -cov_db_name $(COV_NAME) -report_dir $(COV_DIR)
 
 WAVE_FLAGS = work.tb -view $(WDB_DIR)/tb.wdb -gui
 
@@ -163,9 +191,21 @@ sim: ## Runs XSIM simulation using SEED
 #______________________________________________________________________________
 
 .PHONY: wave
-wave: ## Open vivado waveform
+wave: ## Open waveform
 	@echo -e "$(C_ORA)Openning waveform$(NC)"
 	cd $(RUN_DIR) && xsim $(WAVE_FLAGS)
+#______________________________________________________________________________
+
+.PHONY: coverage
+coverage: ## Runs XCRG coverage
+	@echo -e "$(C_ORA)Running XCRG code coverage report$(NC)"
+	@mkdir -p $(COV_DIR)
+	cd $(RUN_DIR) && xcrg $(XCRG_FLAGS)
+	
+.PHONY: open-coverage
+open-coverage: ## Opens coverage report
+	@echo -e "$(C_ORA)Opening coverage report$(NC)"
+	cd $(RUN_DIR) && firefox 
 #______________________________________________________________________________
 
 .PHONY: clean
@@ -177,27 +217,15 @@ clean: ## Remove all simulation files
 .PHONY: clean
 clean-logs: ## Remove logs
 	@echo -e "$(C_ORA)Removing all logs files$(NC)"
-	rm -rf $(LOGS_DIR)/*
-#______________________________________________________________________________
-
-.PHONY: filter
-filter: ## Filter logs
-	@echo -e "$(C_ORA)Filtering logs$(NC)"
-	@mkdir -p $(LOGS_DIR)/filter
-	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "DRIVER"  *_simv.log > $(LOGS_DIR)/filter/read.log    || true
-	@cd $(LOGS_DIR) && grep --color=auto -B 2 -A 3 "MONITOR" *_simv.log > $(LOGS_DIR)/filter/monitor.log || true
+	rm -rf $(LOGS_DIR)/*.log
 #______________________________________________________________________________
 
 .PHONY: help
 help: ## Display help message
-	@echo ""
 	@echo "======================================================================"
-	@echo ""
 	@echo "Usage: make <target>"
-	@echo ""
 	@echo "--------------------------- Targets ----------------------------------"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-15s\033[0m %s\n", $$1, $$2}'
-	@echo ""
+	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 	@echo "--------------------------- Variables -------------------------------"
 	@echo "  TEST              : Name of UVM_TEST"
 	@echo "  VERBOSITY         : UVM_VERBOSITY of the simulation"
@@ -206,7 +234,6 @@ help: ## Display help message
 	@echo "  SIMV_ARG          : Add plusargs to simv command"
 	@echo "  GUI_MODE          : Enables to run the sim in gui mode [true|false]"
 	@echo "  CODE_COV          : Enables code coverage [true|false]"
-	@echo ""
 	@echo "-------------------------- Variable Values --------------------------"
 	@echo "  TEST              : $(TEST)"
 	@echo "  VERBOSITY         : $(VERBOSITY)"
@@ -215,6 +242,4 @@ help: ## Display help message
 	@echo "  SIMV_ARGS         : $(SIMV_ARGS)"
 	@echo "  GUI_MODE          : $(GUI_MODE)"
 	@echo "  CODE_COV          : $(CODE_COV)"
-	@echo ""
 	@echo "======================================================================"
-	@echo ""

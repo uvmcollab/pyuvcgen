@@ -1,10 +1,10 @@
-name: spi_uvc
+name: gpio_uvc
 author: Ciro Bermudez
-email: cirofabian.bermudezmarquez@ba.infn.it
-domain: baltig.infn.it
-namespace: vip
-date: 2025/04/02
-vsqr_seq_name: spi
+email: cirofabian.bermudez@gmail.com
+domain: github.com
+namespace: uvmcollab
+date: 2025-10-03
+vsqr_seq_name: gpio
 sequence_item:
   - item1:
     type: rand byte

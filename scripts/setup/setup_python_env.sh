@@ -13,6 +13,9 @@
 ## [Revisions]      -
 ##=============================================================================
 
+# Exit on error
+set -e
+
 # Get locations
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT_DIR=$(pwd)
@@ -25,16 +28,35 @@ C_YEL='\033[33m'
 C_ORA='\033[38;5;214m'
 NC='\033[0m'
 
-echo -e "${C_ORA}[INFO]: Checking dependencies${NC}"
-DEPENDENCIES=("python3")
-for item in "${DEPENDENCIES[@]}"; do
-  if command -v $item &> /dev/null; then
-    printf " > %-8s is INSTALLED\n" "$item"
-  else 
-    printf " > %-8s is NOT INSTALLED\n" "$item"
-    exit 1
-  fi
-done
+# Check python3
+if command -v python3 &> /dev/null; then
+  printf " > %-8s is INSTALLED\n" "python3"
+else 
+  printf " > %-8s is NOT INSTALLED\n" "python3"
+  echo -e "${C_RED}[ERROR]: Please install Python 3${NC}"
+  exit 1
+fi
+
+# Check pip
+if python3 -m pip --version &> /dev/null 2>&1; then
+  printf " > %-8s is INSTALLED\n" "pip"
+else 
+  printf " > %-8s is NOT INSTALLED\n" "pip"
+  echo -e "${C_RED}[ERROR]: pip is not available${NC}"
+  echo -e "${C_YEL}[INFO]: Install with: sudo apt install python3-pip${NC}"
+  exit 1
+fi
+
+# Check venv
+if python3 -m venv --help &> /dev/null 2>&1; then
+  printf " > %-8s is INSTALLED\n" "venv"
+else 
+  printf " > %-8s is NOT INSTALLED\n" "venv"
+  echo -e "${C_RED}[ERROR]: venv is not available${NC}"
+  echo -e "${C_YEL}[INFO]: Install with: sudo apt install python3-venv${NC}"
+  exit 1
+fi
+
 echo -e " > All dependencies found"
 
 echo -e "${C_ORA}[INFO]: Checking Active Environment${NC}"
@@ -50,12 +72,13 @@ echo -e "${C_ORA}[INFO]: Creating Virtual Environment${NC}"
 rm -rf .venv
 python3 -m venv .venv
 source .venv/bin/activate
-set +e
-pip install --upgrade pip
-pip install -e .
-set -e
+
+echo -e "${C_ORA}[INFO]: Installing packages${NC}"
+python3 -m pip install --upgrade pip
+python3 -m pip install -e .
 
 echo -e ""
+echo -e "${C_GRE}[SUCCESS]: Environment setup complete!${NC}"
 echo -e "${C_ORA}[INFO]: To activate environment run:${NC}"
 echo -e "======================================================================================="
 echo -e " bash: source $ROOT_DIR/.venv/bin/activate"

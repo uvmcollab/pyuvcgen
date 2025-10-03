@@ -43,13 +43,23 @@ The following directory structure is required to integrate the UVC:
 
 From the root directory run the following:
 
+> [!IMPORTANT]
+> Before running the following commands, make sure your are inside a Git repository.
+> If not, you can initialize one with:
+>
+> ```bash
+> git init --initial-branch=main
+> ```
+>
+> Alternatively, create a new GitHub repository and place these files inside it.
+
 ### For bash
 
 ```bash
 export GIT_ROOT="$(git rev-parse --show-toplevel)"
 export UVM_WORK="$GIT_ROOT/work/uvm"
 mkdir -p "$UVM_WORK" && cd "$UVM_WORK"
-ln -sf $GIT_ROOT/scripts/makefiles/Makefile.xilinx Makefile
+ln -sf $GIT_ROOT/scripts/makefiles/Makefile.vivado Makefile
 ln -sf $GIT_ROOT/scripts/setup/setup_xilinx_eda.sh
 source setup_xilinx_eda.sh
 make
@@ -61,8 +71,11 @@ make
 setenv GIT_ROOT `git rev-parse --show-toplevel`
 setenv UVM_WORK $GIT_ROOT/work/uvm
 mkdir -p $UVM_WORK && cd $UVM_WORK
-ln -sf $GIT_ROOT/scripts/makefiles/Makefile.xilinx Makefile
+ln -sf $GIT_ROOT/scripts/makefiles/Makefile.vivado Makefile
 ln -sf $GIT_ROOT/scripts/setup/setup_xilinx_eda.tcsh
 source setup_xilinx_eda.tcsh
 make
 ```
+
+> [!IMPORTANT]
+> Don’t forget to **source** the `settings64.sh` script to enable access to the Vivado tools.

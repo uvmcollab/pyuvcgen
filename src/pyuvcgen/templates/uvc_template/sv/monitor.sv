@@ -13,6 +13,7 @@ class {{ name }}_monitor extends uvm_monitor;
 
   extern function new(string name, uvm_component parent);
 
+  extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern task do_mon();
 
@@ -23,6 +24,10 @@ function {{ name }}_monitor::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
+
+function void {{ name }}_monitor::build_phase(uvm_phase phase);
+  analysis_port = new("analysis_port", this);
+endfunction : build_phase
 
 
 task {{ name }}_monitor::run_phase(uvm_phase phase);

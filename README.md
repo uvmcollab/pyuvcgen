@@ -20,7 +20,7 @@ Components) templates.
 
 - Python 3.9.21 or later.
 
-## Installing
+## Installation
 
 Install from [PyPi](https://pypi.org/project/pyuvcgen/) using pip:
 
@@ -52,7 +52,7 @@ pyuvcgen -c uvc.yaml
 2. Create a Python virtual environment and install dependencies:
 
     ```bash
-    ./script/setup/setup_python_env.sh
+    ./scripts/setup/setup_python_env.sh
     source .venv/bin/activate
     ```
 
@@ -85,10 +85,6 @@ pyuvcgen -c uvc.yaml
    ```
 
 5. After running the command, a `generated_uvc/` directory will appear in `tests/`, containing your UVC code.
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for details.
 
 ## Contributing
 

@@ -22,6 +22,8 @@ Components) templates.
 
 ## Development
 
+Note: this is still under development!
+
 1. Clone de repository and navigate to its root directory:
 
     ```bash

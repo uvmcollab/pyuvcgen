@@ -20,26 +20,6 @@ Components) templates.
 
 - Python 3.9.21 or later.
 
-## Installation
-
-Install from [PyPi](https://pypi.org/project/pyuvcgen/) using pip:
-
-```bash
-python3 -m pip install pyuvcgen
-```
-
-## Example
-
-The easiest way to use `pyuvcgen` is via the command line tool:
-
-```bash
-# Verify installation
-pyuvcgen -h
-
-# Generate UVC from YAML file
-pyuvcgen -c uvc.yaml
-```
-
 ## Development
 
 1. Clone de repository and navigate to its root directory:

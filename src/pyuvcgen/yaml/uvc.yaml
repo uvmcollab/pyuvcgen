@@ -1,20 +1,71 @@
+# ======================================================== #
+# ================ GENERAL CONFIGURATIONS ================ #
+# ===================== (MANDATORY) ====================== #
+
 name: spi_uvc
 author: Ciro Bermudez
 email: cirofabian.bermudezmarquez@ba.infn.it
 domain: baltig.infn.it
 namespace: vip
-date: 2025/04/02
+date: 2025/11/05
+
+# ======================================================== #
+# ================== VIRTUAL SEQUENCER =================== #
+# ===================== (MANDATORY) ====================== #
+
 vsqr_seq_name: spi
+
+# ======================================================== #
+# ==================== SEQUENCE_ITEM ===================== #
+## ====================== (OPTIONAL) ====================== #
+
 sequence_item:
-  - item1:
+  - id:
     type: rand byte
     name: m_data
     format: d
-  - item3:
+  - id:
     type: byte
     name: m_data_mosi
     format: d
-  - item4:
+  - id:
     type: byte
     name: m_data_miso
     format: d
+
+# ======================================================== #
+# ======================= INTEFACE ======================= #
+# ====================== (OPTIONAL) ====================== #
+
+# ======================== INPUTS ======================== #
+
+inputs:
+  - id:
+    name: din_i
+    type: logic
+    size: 8
+  - id:
+    name: dvsr_i
+    type: logic
+    size: 16
+  - id:
+    name: start_i
+    type: logic
+    size: 1
+  - id:
+    name: miso_i
+    type: logic
+    size: 1
+
+# ======================= OUTPUTS ======================== #
+
+outputs:
+  - id:
+    name: dout_o
+    type: logic
+    size: 8
+  - id:
+    name: mosi_o
+    type: logic
+    size: 1
+  

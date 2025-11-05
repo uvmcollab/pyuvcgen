@@ -2,7 +2,7 @@
 `define {{ name | upper }}_CONFIG_SV
 
 class {{ name }}_config extends uvm_object;
-  
+
   `uvm_object_utils({{ name }}_config)
 
   virtual {{ name }}_if    vif;

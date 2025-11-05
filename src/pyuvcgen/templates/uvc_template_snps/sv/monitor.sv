@@ -26,14 +26,6 @@ endfunction : new
 
 
 function void {{ name }}_monitor::build_phase(uvm_phase phase);
-  if ( !uvm_config_db #(virtual {{ name }}_if)::get(get_parent(), "", "vif", vif) ) begin
-    `uvm_fatal(get_name(), "Could not retrieve {{ name }}_if from config db")
-  end
-
-  if ( !uvm_config_db #({{ name }}_config)::get(get_parent(), "", "config", m_config) ) begin
-    `uvm_fatal(get_name(), "Could not retrieve {{ name }}_config from config db")
-  end
-
   analysis_port = new("analysis_port", this);
 endfunction : build_phase
 
@@ -46,6 +38,7 @@ endtask : run_phase
 
 task {{ name }}_monitor::do_mon();
   forever begin
+    //`uvm_info(get_type_name(), m_trans.convert2string, UVM_DEBUG)
     `uvm_info(get_type_name(), "PUT THE MONITOR CODE HERE", UVM_MEDIUM)
     analysis_port.write(m_trans);
   end

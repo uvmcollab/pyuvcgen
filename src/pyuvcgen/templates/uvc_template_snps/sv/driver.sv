@@ -10,7 +10,6 @@ class {{ name }}_driver extends uvm_driver #({{ name }}_sequence_item);
 
   extern function new(string name, uvm_component parent);
 
-  extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern task do_drive();
 
@@ -20,17 +19,6 @@ endclass : {{ name }}_driver
 function {{ name }}_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
-
-
-function void {{ name }}_driver::build_phase(uvm_phase phase);
-  if ( !uvm_config_db #(virtual {{ name }}_if)::get(get_parent(), "", "vif", vif) ) begin
-    `uvm_fatal(get_name(), "Could not retrieve {{ name }}_if from config db")
-  end
-
-  if ( !uvm_config_db #({{ name }}_config)::get(get_parent(), "", "config", m_config) ) begin
-    `uvm_fatal(get_name(), "Could not retrieve {{ name }}_config from config db")
-  end
-endfunction : build_phase
 
 
 task {{ name }}_driver::run_phase(uvm_phase phase);
@@ -43,6 +31,7 @@ endtask : run_phase
 
 
 task {{ name }}_driver::do_drive();
+  //`uvm_info(get_type_name(), m_trans.convert2string, UVM_DEBUG)
   `uvm_info(get_type_name(), "PUT THE DRIVER CODE HERE", UVM_MEDIUM)
 endtask : do_drive
 

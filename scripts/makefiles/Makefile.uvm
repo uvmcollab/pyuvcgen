@@ -74,16 +74,10 @@ clean-venv:  ## Delele python virtual environment
 
 .PHONY: help
 help: ## Display help message
-	@echo ""
 	@echo -e "$(C_ORA)Help message$(NC)"
 	@echo "======================================================================"
 	@echo "Usage: make <target>"
-	@echo ""
-	@echo ""
-	@echo "Available targets:"
-	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-18s\033[0m %s\n", $$1, $$2}'
-	@echo ""
-	@echo ""
+	@echo "--------------------------- Targets ----------------------------------"
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "- make \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo "======================================================================"
-	@echo ""
+#______________________________________________________________________________

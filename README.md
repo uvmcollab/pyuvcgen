@@ -68,6 +68,10 @@ Note: this is still under development!
 
 5. After running the command, a `generated_uvc/` directory will appear in `tests/`, containing your UVC code.
 
+## License
+
+Add later
+
 ## Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check issues or submit a pull request.

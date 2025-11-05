@@ -9,7 +9,7 @@ class {{ name }}_driver extends uvm_driver #({{ name }}_sequence_item);
   {{ name }}_config     m_config;
 
   extern function new(string name, uvm_component parent);
-  
+
   extern task run_phase(uvm_phase phase);
   extern task do_drive();
 
@@ -31,6 +31,7 @@ endtask : run_phase
 
 
 task {{ name }}_driver::do_drive();
+  //`uvm_info(get_type_name(), m_trans.convert2string, UVM_DEBUG)
   `uvm_info(get_type_name(), "PUT THE DRIVER CODE HERE", UVM_MEDIUM)
 endtask : do_drive
 

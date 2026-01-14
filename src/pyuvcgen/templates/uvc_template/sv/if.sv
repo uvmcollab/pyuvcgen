@@ -5,6 +5,10 @@ interface {{ name }}_if (
   input logic clk_i
 );
 
+  timeunit      1ns;
+  timeprecision 1ps;
+
+
   import {{ name }}_pkg::*;
 
   // ================================= INPUTS ================================= //

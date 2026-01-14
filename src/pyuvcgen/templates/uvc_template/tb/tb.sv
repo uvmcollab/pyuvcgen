@@ -1,5 +1,8 @@
 module tb;
 
+  timeunit       1ns;
+  timeprecisiion 1ps;
+
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 

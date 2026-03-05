@@ -8,6 +8,7 @@ interface {{ name }}_if (
   timeunit      1ns;
   timeprecision 1ps;
 
+  localparam time CB_OUTPUT_SKEW = 1ns;
 
   import {{ name }}_pkg::*;
 
@@ -42,25 +43,25 @@ interface {{ name }}_if (
   // ============================ CLOCKING BLOCKS ============================= //
   
   clocking cb_drv @(posedge clk_i);
-    default input #1ns output #1ns;
+    default input #1step output #CB_OUTPUT_SKEW;
     {%- for elem in inputs %}
     output {{ elem.name }};
     {%- endfor %}
   endclocking : cb_drv
 
   clocking cb_drv_neg @(negedge clk_i);
-    default input #1ns output #1ns;
+    default input #1step output #CB_OUTPUT_SKEW;
     {%- for elem in inputs %}
     output {{ elem.name }};
     {%- endfor %}
   endclocking : cb_drv_neg
 
   clocking cb_mon @(posedge clk_i);
-    default input #1ns output #1ns;
+    default input #1step output #CB_OUTPUT_SKEW;
   endclocking : cb_mon
 
   clocking cb_mon_neg @(posedge clk_i);
-    default input #1ns output #1ns;
+    default input #1step output #CB_OUTPUT_SKEW;
   endclocking : cb_mon_neg
 
 endinterface : {{ name }}_if

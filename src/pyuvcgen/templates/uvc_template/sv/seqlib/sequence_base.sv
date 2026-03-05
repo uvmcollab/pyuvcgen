@@ -22,7 +22,6 @@ endfunction : new
 
 task {{ name }}_sequence_base::body();
   // Version 1: Randomize directly from sequence
-  {{ name }}_sequence_item
   req = {{ name }}_sequence_item::type_id::create("req");
   start_item(req);
   if ( !req.randomize() ) begin

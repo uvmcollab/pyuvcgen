@@ -1,7 +1,7 @@
 module tb;
 
-  timeunit       1ns;
-  timeprecisiion 1ps;
+  timeunit      1ns;
+  timeprecision 1ps;
 
   `include "uvm_macros.svh"
   import uvm_pkg::*;
@@ -9,9 +9,9 @@ module tb;
   import top_test_pkg::*;
 
   // Clock signal
-  localparam time CLK_PERIOD = 10ns;
   logic clk_i = 0;
-  always #(CLK_PERIOD / 2) clk_i = ~clk_i;
+  localparam int unsigned ClkPeriod = 10_000; // 100 MHz -> 10 ns
+  always #( (ClkPeriod / 2) * 1ps) clk_i = ~clk_i;
 
   // Reset signal
   logic rst_i = 1;

@@ -13,6 +13,7 @@ class top_scoreboard extends uvm_scoreboard;
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern function void report_phase(uvm_phase phase);
+  extern function void final_phase(uvm_phase phase);
 
 endclass : top_scoreboard
 
@@ -34,5 +35,10 @@ endtask : run_phase
 
 function void top_scoreboard::report_phase(uvm_phase phase);
 endfunction : report_phase
+
+
+function void top_scoreboard::final_phase(uvm_phase phase);
+ super.final_phase(phase);
+endfunction : final_phase
 
 `endif // TOP_SCOREBOARD_SV

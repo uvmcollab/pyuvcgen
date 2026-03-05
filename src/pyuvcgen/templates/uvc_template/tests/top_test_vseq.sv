@@ -6,9 +6,6 @@ class top_test_vseq extends uvm_sequence;
   `uvm_object_utils(top_test_vseq)
   `uvm_declare_p_sequencer(top_vsqr)
 
-  //int unsigned  m_iter = 100;
-  //spi_uvc_mode_e m_mode = SPI_UVC_MODE_0;
-
   extern function new(string name = "");
 
   extern task pre_start();
@@ -41,6 +38,7 @@ task top_test_vseq::pre_start();
   // if (!uvm_config_db#(string)::get(m_sequencer, "", "m_mode", config_str)) begin
   //   `uvm_info(get_type_name(), $sformatf("\nUsing default m_mode value %s", m_mode), UVM_MEDIUM)
   // end else begin
+  //   m_mode = config_str;
   //   `uvm_info(get_type_name(), $sformatf("\nm_mode set to %s from config DB", m_mode), UVM_MEDIUM)
   // end
 endtask : pre_start

@@ -38,7 +38,7 @@ endtask : run_phase
 
 task {{ name }}_monitor::do_mon();
   forever begin
-    //`uvm_info(get_type_name(), m_trans.convert2string, UVM_DEBUG)
+    //`uvm_info(get_type_name(), m_trans.convert2string(), UVM_DEBUG)
     `uvm_info(get_type_name(), "PUT THE MONITOR CODE HERE", UVM_MEDIUM)
     analysis_port.write(m_trans);
   end

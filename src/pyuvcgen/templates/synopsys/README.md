@@ -41,6 +41,10 @@ The following directory structure is required to integrate the UVC:
 
 ## Setup
 
+> **Note:** Before running the setup, make sure to place your own `setup_synopsys_eda.sh` file in the `scripts/setup/` directory.
+
+> **Note:** This setup only needs to be executed once. Afterward, simply navigate to `work/uvm` and source your setup file.
+
 From the root directory run the following:
 
 ### For bash

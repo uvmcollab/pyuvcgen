@@ -1,6 +1,6 @@
 [project]
 name = "pyuvcgen"
-version = "1.5.3"
+version = "1.5.4"
 description = "Python-based UVM UVC generator"
 authors = [
     { name = "cirobermudezmarquez", email = "cirofabian.bermudez@gmail.com" }
@@ -25,6 +25,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 pyuvcgen = [
     "templates/**/*",
+    "templates/**/.gitignore",
     "yaml/**/*",
 ]
 

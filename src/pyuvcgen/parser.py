@@ -1,4 +1,5 @@
 import argparse
+from importlib.metadata import version
 from pathlib import Path
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):
@@ -45,6 +46,12 @@ Examples:
         metavar="DIR",
         default=Path("generated_uvc"),
         help="Output directory for generated UVC files [default: generated_uvc]",
+    )
+
+    parser.add_argument(
+        "-v", "--version",
+        action="version",
+        version=f"%(prog)s {version('pyuvcgen')}"
     )
 
     args = parser.parse_args()

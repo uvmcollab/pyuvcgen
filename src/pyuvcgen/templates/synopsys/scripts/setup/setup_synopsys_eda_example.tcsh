@@ -7,4 +7,4 @@
 
 # TB Environment Variables
 setenv GIT_ROOT `git rev-parse --show-toplevel`
-setenv UVM_WORK $GIT_ROOT/work/
+setenv UVM_WORK $GIT_ROOT/work/uvm

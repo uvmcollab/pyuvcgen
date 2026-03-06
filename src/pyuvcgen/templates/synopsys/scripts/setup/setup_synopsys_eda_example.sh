@@ -7,4 +7,4 @@
 
 # TB Environment Variables
 export GIT_ROOT="$(git rev-parse --show-toplevel)"
-export UVM_WORK="$GIT_ROOT/work"
+export UVM_WORK="$GIT_ROOT/work/uvm"

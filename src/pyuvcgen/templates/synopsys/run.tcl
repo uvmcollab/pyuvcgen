@@ -3,7 +3,7 @@
 ## [Project]        {{ name }}
 ## [Author]         {{ author }} - {{ email }}
 ## [Language]       Tcl (Tool Command Language)
-## [Created]        Nov 2024
+## [Created]        {{ created }}
 ## [Modified]       -
 ## [Description]    Tcl file fo run simulation
 ## [Notes]          -
@@ -11,5 +11,14 @@
 ## [Revisions]      -
 ##=============================================================================
 
-fsdbDumpvars 0 "tb" +all +trace_process
+# Dump signals to FSDB (RECOMMENDED)
+dump -file novas.fsdb -type FSDB
+dump -add top.DUT -depth 1 -ports -fid FSDB0
 run
+quit
+
+# Dumps everything from root including complex data type 
+# dump -file novas.fsdb -type FSDB
+# dump -add / -aggregates
+# run
+# quit

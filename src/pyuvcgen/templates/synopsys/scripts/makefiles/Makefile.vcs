@@ -3,7 +3,7 @@
 ## [Project]        {{ name }}
 ## [Author]         {{ author }} - {{ email }}
 ## [Language]       GNU Makefile
-## [Created]        Nov 2024
+## [Created]        {{ created }}
 ## [Modified]       -
 ## [Description]    Makefile for testing {{ name }}
 ## [Notes]          -
@@ -29,7 +29,6 @@ UVCS_DIR    := $(UVM_DIR)/uvcs
 RTL_DIR     := $(UVM_DIR)/rtl
 DPI_DIR     := $(UVM_DIR)/dpi
 REGR_DIR    := $(ROOT_DIR)/regression
-SPOOL_DIR   := $(ROOT_DIR)/spool
 MERGE_DIR   := $(ROOT_DIR)/merge_cov
 
 # UVM configurations
@@ -38,12 +37,13 @@ VERBOSITY ?= UVM_MEDIUM
 SEED ?= 3553209930
 VCS_DEFINES ?= +define+GIT_DIR=\"$(UVM_DIR)\"
 RUN_ARGS ?=
+
 COV_NAME ?= simv_cov
 JOB_NAME ?= debug
 
 # Simulation mode [true, false]
 ENABLE_GUI ?= false
-GUI_FLAGS  ?= 
+GUI_FLAGS  ?= -ucli -do $(SCRIPTS_DIR)/configs/run.tcl
 
 # Random Seed mode [auto, fixed]
 SEED_MODE  ?= auto
@@ -51,14 +51,14 @@ SEED_FLAGS ?=
 
 # Code Coverage [true, false]
 ENABLE_CODE_COV ?= true
-COV_FLAGS_COMMON ?= -cm line+cond+fsm+branch
+COV_FLAGS_COMMON ?= -cm line+cond+fsm+branch+tgl+assert
 COV_FLAGS_VCS   ?=
 COV_FLAGS_SIMV  ?=
 
-# Regression manager
-EMAN_PLUS ?=
-COV_DB_LIST := $(MERGE_DIR)/mergeserver_data/session_*/merged/merged.vdb
-COV_DB_RECENT := $(lastword $(sort $(wildcard $(COV_DB_LIST))))
+# SVA [true, false]
+ENABLE_SVA ?= false
+SVA_FLAGS_VCS  ?= -assert disable
+SVA_FLAGS_SIMV ?=
 
 # ================================  CONTROL  ==================================
 
@@ -80,10 +80,16 @@ else
   SEED_FLAGS = +ntb_random_seed=$(SEED)
 endif
 
+# SVA mode switch [true, false]
+ifeq ($(ENABLE_SVA),true)
+	SVA_FLAGS_VCS  = -assert enable_diag+enable_hier
+	SVA_FLAGS_SIMV = -assert finish_maxfail=1000+maxcover=10+summary+quiet1+hier=$(TB_DIR)/sva/assert_hier.txt+report=$(LOGS_DIR)/$(CUR_DATE)_sva.log
+endif
+
 # ==============================  TOOLS SETUP  ================================
 
 # Files
-RTL_FILES = $(RTL_DIR)/spi_ip.sv
+RTL_FILES = $(RTL_DIR)/buffer.sv
 SVE = -F $(UVM_DIR)/sve.f
 VERDI_FILE = $(VERDI_DIR)/verdi.tcl
 DPI_FILE =
@@ -94,39 +100,34 @@ UVCS = -F $(UVM_DIR)/{{ name }}_uvc.f
 # Synopsys VCS/SIMV/URG/EMAN/VERDI options
 FILES = $(UVCS) $(RTL_FILES) $(SVE) 
 
-VCS_FLAGS = -full64 -sverilog -ntb_opts uvm-1.2 \
+VCS_FLAGS = -full64 -sverilog \
+			-ntb_opts uvm-1.2 \
 			-lca -debug_access+all -kdb \
 			-timescale=1ps/100fs $(FILES) \
 			-l $(LOGS_DIR)/$(CUR_DATE)_comp.log \
 			-top tb \
 			-j8 \
 			$(VCS_DEFINES) \
-			$(COV_FLAGS_VCS)
+			$(COV_FLAGS_VCS) \
+			$(SVA_FLAGS_VCS) \
+			$(DPI_FILE)
 
 SIMV_FLAGS = +UVM_TESTNAME=$(TEST) +UVM_VERBOSITY=$(VERBOSITY) \
 			+UVM_TR_RECORD +UVM_LOG_RECORD +UVM_NO_RELNOTES \
 			+UVM_VERDI_TRACE=HIER+RAL+TLM \
-			-ucli -do $(UVM_DIR)/run.tcl \
 			$(COV_FLAGS_SIMV) \
+			$(SVA_FLAGS_SIMV) \
 			$(RUN_ARGS) \
 			$(GUI_FLAGS)
-
-# -l $(LOGS_DIR)/$(CUR_DATE)_simv.log \
 
 URG_FLAGS = -full64 -dir $(COV_NAME).vdb -format both \
 			-log $(LOGS_DIR)/$(CUR_DATE)_cov.log \
 			-report $(COV_DIR)
 
-EMAN_FLAGS = -local_host -spool_dir $(SPOOL_DIR) -nodes 1 \
-			 -merge_dir $(MERGE_DIR) -project spi_ip_ver \
-			 $(EMAN_PLUS) \
-			 -regr_config $(UVM_DIR)/regressions/regression.emc
-
 # VERDI Configuration (see work/sim/verdi.cmd)
 VERDI_FLAGS    = -ssf $(RUN_DIR)/$(JOB_NAME)/novas.fsdb -dbdir simv.daidir -nologo -q
 VERDI_PLAY     = -play $(VERDI_FILE)
 VERDI_COV      = -cov -covdir $(COV_NAME).vdb -nologo -q
-VERDI_COV_REGR = -cov -covdir $(COV_DB_RECENT) -nologo -q
 
 # Colors
 C_RED := \033[31m
@@ -138,7 +139,7 @@ C_ORA := \033[38;5;214m
 NC    := \033[0m 
 
 # Synopsys tools
-SYNOPSYS_TOOLS = vcs urg eman verdi wv
+SYNOPSYS_TOOLS = vcs urg verdi wv
 
 # ================================  TARGETS  ==================================
 .DEFAULT_GOAL := all
@@ -180,7 +181,6 @@ vars: ## UVM: Print Makefile variables
 	@echo "RTL_DIR     = $(RTL_DIR)"
 	@echo "DPI_DIR     = $(DPI_DIR)"
 	@echo "REGR_DIR    = $(REGR_DIR)"
-	@echo "SPOOL_DIR   = $(SPOOL_DIR)"
 	@echo "MERGE_DIR   = $(MERGE_DIR)"
 	@echo ""
 	@echo -e "$(C_ORA)UVM variables$(NC)"
@@ -199,8 +199,6 @@ vars: ## UVM: Print Makefile variables
 	@echo "COV_FLAGS_COMMON = $(COV_FLAGS_COMMON)"
 	@echo "COV_FLAGS_VCS    = $(COV_FLAGS_VCS)"
 	@echo "COV_FLAGS_SIMV   = $(COV_FLAGS_SIMV)"
-	@echo "EMAN_PLUS        = $(EMAN_PLUS)"
-	@echo "COV_DB_RECENT    = $(COV_DB_RECENT)"
 	@echo "PID              = $$$$"
 #______________________________________________________________________________
 
@@ -246,29 +244,13 @@ verdi-cov: ## UVM: Open coverage report in Verdi
 	cd $(RUN_DIR) && verdi $(VERDI_COV) &
 #______________________________________________________________________________
 
-.PHONY: regr
-regr: ## UVM: Run regression
-	@echo -e "$(C_ORA)Running regression$(NC)"
-	@mkdir -p $(REGR_DIR)
-	cd $(REGR_DIR) && eman $(EMAN_FLAGS)
-#______________________________________________________________________________
-
-.PHONY: regr-cov
-regr-cov: ## UVM: Open regression coverage report in Verdi
-	@echo -e "$(C_ORA)Opening regression coverage report in Verdi$(NC)"
-	cd $(REGR_DIR) && verdi $(VERDI_COV_REGR) &
-#______________________________________________________________________________
-
-.PHONY: regr-web
-regr-web: ## UVM: Open regression webpage report
-	@echo -e "$(C_ORA)Opening regression coverage report web$(NC)"
-	firefox $(REGR_DIR)/data/depot/cvsdepot/index.html &
-#______________________________________________________________________________
-
 .PHONY: compile-dpi
-compile-dpi: ## UVM: Run dpi (C/C++) compilation
-	@echo -e "$(C_ORA)UVM: Compiling dpi (C/C++) code$(NC)"
-	g++ -c $(DPI_DIR)/external.cpp -o $(DPI_DIR)/external.o
+compile-dpi: ## TB: Run dpi (C/C++) compilation
+	@echo -e "$(C_ORA)TB: Compiling dpi (C/C++) code$(NC)"
+	g++ -fPIC -c $(DPI_FILE) -I ${VCS_HOME}/include -o $(DPI_DIR)/dpi.o
+# -fPIC Flag to generate position-independent code (shared library)
+# If you want to compile dpi repeatedly and include the .o to simv
+# but it's better to compile from vcs command
 #______________________________________________________________________________
 
 .PHONY: clean
@@ -283,17 +265,19 @@ clean-logs: ## UVM: Remove logs
 	rm -rf $(LOGS_DIR)
 #______________________________________________________________________________
 
-.PHONY: clean-regr
-clean-regr: ## UVM: Remove all regression files
-	@echo -e "$(C_ORA)Removing all regression files$(NC)"
-	rm -rf $(REGR_DIR) $(SPOOL_DIR) $(MERGE_DIR)
+.PHONY: fsdb2vcd
+fsdb2vcd: ## TB: Convert FSDB to VCD
+	@echo -e "$(C_ORA)TB: Convert FSDB to VCD$(NC)"
+	cd $(RUN_DIR)/$(JOB_NAME) && fsdb2vcd novas.fsdb -o novas.vcd -sv
+#______________________________________________________________________________
+
+.PHONY: vcd2fsdb
+vcd2fsdb: ## TB: Convert VCD to FSDB
+	@echo -e "$(C_ORA)TB: Convert VCD to FSDB$(NC)"
+	cd $(RUN_DIR)/$(JOB_NAME) && vcd2fsdb novas.vcd -o novas.fsdb -sv
 #______________________________________________________________________________
 
 # ================================= INCLUDES ================================= #
-
-## UVM: LOGS FILTERS
-include $(SCRIPTS_DIR)/filter/Makefile.filter
-#______________________________________________________________________________
 
 .PHONY: help
 help: ## UVM: Displays help message
@@ -312,7 +296,6 @@ help: ## UVM: Displays help message
 	@echo "  ENABLE_CODE_COV   : Enables code coverage [true|false]"
 	@echo "  VCS_DEFINES       : Add defines to vcs command"
 	@echo "  RUN_ARGS          : Add plusargs to simv command"
-	@echo "  EMAN_PLUS         : Add more arguments to eman command"
 	@echo "  JOB_NAME          : Name of the job (simulation folder)"
 	@echo "-------------------------- Variable Values --------------------------"
 	@echo "  TEST              : $(TEST)"
@@ -323,7 +306,6 @@ help: ## UVM: Displays help message
 	@echo "  ENABLE_CODE_COV   : $(ENABLE_CODE_COV)"
 	@echo "  VCS_DEFINES       : $(VCS_DEFINES)"
 	@echo "  RUN_ARGS          : $(RUN_ARGS)"
-	@echo "  EMAN_PLUS         : $(EMAN_PLUS)"
 	@echo "  JOB_NAME          : $(JOB_NAME)"
 	@echo "======================================================================"
 #______________________________________________________________________________

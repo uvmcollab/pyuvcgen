@@ -15,15 +15,13 @@ def main() -> None:
 
     # Log generation info
     logging.info("Starting UVC generation")
-    # logging.info(f"Inputs YAML:    {args.config}")
-    # logging.info(f"Tool selected:  {args.tool}")
-    # logging.info(f"Output Path:    {args.output}")
 
     # Call template generator
     generate_uvc(
-        config_path=args.config,
+        config_path=args.input,
         target_tool=args.tool, 
-        output_dir=args.output
+        output_dir=args.output,
+        mode=args.mode
     )
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 import shutil
 import yaml
 import jinja2
@@ -7,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def generate_uvc(config_path: Path, target_tool: str, output_dir: Path) -> None:
+def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Path) -> None:
     """
     Generate UVM-UVC code from a YAML config and Jinja2 templates.
     """
@@ -24,6 +25,9 @@ def generate_uvc(config_path: Path, target_tool: str, output_dir: Path) -> None:
     # Load YAML configuration
     data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     uvc_name = data["name"]
+
+    # Add current date
+    data["created"] = datetime.now().strftime("%b %Y")
 
     # Define output directory
     dest_root = output_dir / uvc_name

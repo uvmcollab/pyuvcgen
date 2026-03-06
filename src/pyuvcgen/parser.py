@@ -15,18 +15,18 @@ UVM-UVC Code Generator - Generate Universal Verification Components from YAML co
         formatter_class=CustomHelpFormatter,
         epilog="""
 Examples:
-    pyuvcgen -c config.yaml
-    pyuvcgen -c config.yaml -t vivado
-    pyuvcgen -c config.yaml -t synopsys -o output_uvc""",
+    pyuvcgen -i config.yaml
+    pyuvcgen -i config.yaml -t vivado
+    pyuvcgen -i config.yaml -t synopsys -o output_uvc""",
     )
 
     parser.add_argument(
-        "-c",
-        "--config",
+        "-i",
+        "--input",
         type=Path,
         required=True,
         metavar="FILE",
-        help="YAML configuration file path",
+        help="YAML configuration input file path",
     )
 
     parser.add_argument(
@@ -46,6 +46,16 @@ Examples:
         metavar="DIR",
         default=Path("generated_uvc"),
         help="Output directory for generated UVC files [default: generated_uvc]",
+    )
+
+    parser.add_argument(
+        "-m",
+        "--mode",
+        type=str,
+        metavar="MODE",
+        default="uvc",
+        choices=["uvc", "project"],
+        help="Template mode (choices: synopsys, project) [default: uvc]",
     )
 
     parser.add_argument(

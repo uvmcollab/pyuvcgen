@@ -16,6 +16,8 @@ class top_env extends uvm_env;
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
+  extern function void end_of_elaboration_phase(uvm_phase phase);
+  extern function void report_phase(uvm_phase phase);
 
 endclass : top_env
 
@@ -46,5 +48,13 @@ endfunction : build_phase
 function void top_env::connect_phase(uvm_phase phase);
   vsqr.m_{{ vsqr_seq_name }}_sequencer = m_{{ name }}_agent.m_sequencer;
 endfunction : connect_phase
+
+
+function void top_env::end_of_elaboration_phase(uvm_phase phase);
+endfunction : end_of_elaboration_phase
+
+
+function void top_env::report_phase(uvm_phase phase);
+endfunction : report_phase
 
 `endif // TOP_ENV_SV

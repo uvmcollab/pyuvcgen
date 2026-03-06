@@ -31,7 +31,7 @@ endtask : run_phase
 
 
 task {{ name }}_driver::do_drive();
-  //`uvm_info(get_type_name(), m_trans.convert2string, UVM_DEBUG)
+  //`uvm_info(get_type_name(), m_trans.convert2string(), UVM_DEBUG)
   `uvm_info(get_type_name(), "PUT THE DRIVER CODE HERE", UVM_MEDIUM)
 endtask : do_drive
 

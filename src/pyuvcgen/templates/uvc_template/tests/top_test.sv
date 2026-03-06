@@ -47,4 +47,4 @@ task top_test::run_phase(uvm_phase phase);
   phase.drop_objection(this);
 endtask : run_phase
 
-`endif // TOP_TEST_SV
+`endif  // TOP_TEST_SV

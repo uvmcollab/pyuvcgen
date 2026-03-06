@@ -1,6 +1,6 @@
 [project]
 name = "pyuvcgen"
-version = "1.5.2"
+version = "1.5.3"
 description = "Python-based UVM UVC generator"
 authors = [
     { name = "cirobermudezmarquez", email = "cirofabian.bermudez@gmail.com" }
@@ -19,6 +19,15 @@ pyuvcgen = "pyuvcgen.cli:main"
 requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pyuvcgen = [
+    "templates/**/*",
+    "yaml/**/*",
+]
+
 [[tool.uv.index]]
 name = "testpypi"
 url = "https://test.pypi.org/simple/"
@@ -34,4 +43,3 @@ dev = [
 Homepage = "https://github.com/uvmcollab/pyuvcgen"
 Repository = "https://github.com/uvmcollab/pyuvcgen"
 Issues = "https://github.com/uvmcollab/pyuvcgen/issues"
-

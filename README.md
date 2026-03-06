@@ -36,7 +36,7 @@ Components) templates.
 5. Generate the UVC code:
 
    ```bash
-   uv run pyuvcgen -i yaml/uvc.yaml -o 
+   uv run pyuvcgen -i yaml/uvc.yaml
    ```
 
 6. After running the command, a `generated_uvc/` directory will appear in `tests/`, containing your UVC code.

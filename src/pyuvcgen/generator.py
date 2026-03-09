@@ -17,22 +17,8 @@ def run_git_init(dest_root: Path) -> None:
 
     logger.info(f"Initializing git repository in {dest_root}")
 
-    # subprocess.run(["git", "init"], cwd=dest_root, check=True)
-    # subprocess.run(["git", "branch", "-M", "main"], cwd=dest_root, check=True)
     subprocess.run(["git", "init", "-b", "main"], cwd=dest_root, check=True)
     subprocess.run(["git", "add", "README.md"], cwd=dest_root, check=True)
-
-    # Optional initial commit
-    # try:
-    #     subprocess.run(
-    #         ["git", "commit", "-m", "feat: initial commit with README"],
-    #         cwd=dest_root,
-    #         check=True,
-    #     )
-    # except subprocess.CalledProcessError:
-    #     logger.warning(
-    #         "Could not create initial commit. Git user.name/user.email may not be configured."
-    #     )
 
 
 def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Path) -> None:

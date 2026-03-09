@@ -43,8 +43,6 @@ Components) templates.
 
 7. Use the `README.md` inside the `generated_uvc` to setup the environment
 
-> **IMPORTAT:** the `Makefile`
-
 ## Contributing 
 
 Contributions, issues, and feature requests are welcome! Feel free to check issues or submit a pull request.

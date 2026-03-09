@@ -28,6 +28,7 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
 
     # Add current date
     data["created"] = datetime.now().strftime("%b %Y")
+    data["uvm_dir"] = "$(GIT_DIR)" if mode == "uvc" else "$(GIT_DIR)/verification/uvm"
 
     # Define output directory
     dest_root = output_dir / uvc_name
@@ -38,7 +39,8 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
     # Log generation info
     logging.info(f"Generating UVC: {uvc_name}")
     logging.info(f"Config Path:    {config_path}")
-    logging.info(f"Target tool:    {target_tool}")
+    logging.info(f"Target tool:    {mode}")
+    logging.info(f"Template mode:  {target_tool}")
     logging.info(f"Output Dir:     {output_dir}")
 
     # Setup Jinja2 environment
@@ -48,7 +50,15 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
 
     # Process each template file from base uvc_template
     for dir_path in templates_dir:
+
         for tmpl in dir_path.rglob("**/*"):
+
+            # In "project" mode skip rtl/ and sv/
+            rel = tmpl.relative_to(dir_path)
+            if mode == "project" and rel.parts[0] in {"rtl"}:
+                logger.info(f"Skip {tmpl}")
+                continue
+
             if tmpl.is_file():
                 # Apply template
                 rel = tmpl.relative_to(dir_path)

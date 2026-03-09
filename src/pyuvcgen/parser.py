@@ -55,7 +55,7 @@ Examples:
         metavar="MODE",
         default="uvc",
         choices=["uvc", "project"],
-        help="Template mode (choices: synopsys, project) [default: uvc]",
+        help="Template mode (choices: uvc, project) [default: uvc]",
     )
 
     parser.add_argument(

@@ -31,7 +31,11 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
     data["uvm_dir"] = "$(GIT_DIR)" if mode == "uvc" else "$(GIT_DIR)/verification/uvm"
 
     # Define output directory
-    dest_root = output_dir / uvc_name
+    if mode == "project":
+        dest_root = output_dir
+    else:
+        dest_root = output_dir / uvc_name
+        
     if dest_root.exists():
         shutil.rmtree(dest_root)
     dest_root.mkdir(parents=True)

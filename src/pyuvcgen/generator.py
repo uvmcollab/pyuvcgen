@@ -4,8 +4,35 @@ import shutil
 import yaml
 import jinja2
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
+
+def run_git_init(dest_root: Path) -> None:
+    """Initialize a git repository in dest_root."""
+
+    if (dest_root / ".git").exists():
+        logger.info("Git repository already exists, skipping git init")
+        return
+
+    logger.info(f"Initializing git repository in {dest_root}")
+
+    # subprocess.run(["git", "init"], cwd=dest_root, check=True)
+    # subprocess.run(["git", "branch", "-M", "main"], cwd=dest_root, check=True)
+    subprocess.run(["git", "init", "-b", "main"], cwd=dest_root, check=True)
+    subprocess.run(["git", "add", "README.md"], cwd=dest_root, check=True)
+
+    # Optional initial commit
+    # try:
+    #     subprocess.run(
+    #         ["git", "commit", "-m", "feat: initial commit with README"],
+    #         cwd=dest_root,
+    #         check=True,
+    #     )
+    # except subprocess.CalledProcessError:
+    #     logger.warning(
+    #         "Could not create initial commit. Git user.name/user.email may not be configured."
+    #     )
 
 
 def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Path) -> None:
@@ -36,6 +63,7 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
     else:
         dest_root = output_dir / uvc_name
         
+    # Create destination directory
     if dest_root.exists():
         shutil.rmtree(dest_root)
     dest_root.mkdir(parents=True)
@@ -84,3 +112,6 @@ def generate_uvc(config_path: Path, target_tool: str, mode: str, output_dir: Pat
                 out_file = out_subdir / name
                 out_file.write_text(content, encoding="utf-8")
                 logger.info(f"Written {out_file}")
+    
+    # Initialize git repo
+    run_git_init(dest_root=dest_root)

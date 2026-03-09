@@ -1,6 +1,6 @@
 [project]
 name = "pyuvcgen"
-version = "1.5.6"
+version = "1.5.9"
 description = "Python-based UVM UVC generator"
 authors = [
     { name = "cirobermudezmarquez", email = "cirofabian.bermudez@gmail.com" }
